@@ -1,20 +1,20 @@
 SELECT
 	DISTINCT	a.LeadID			AS	LeadID,
-	m.LeadID						AS	ParentLeadID,
-	p.AccountID						AS	AccountID,
+	m.LeadID					AS	ParentLeadID,
+	p.AccountID					AS	AccountID,
 	c.PartnerName					AS	ChildPartner,
 	o.PartnerName					AS	ParentPartner,
 	m.SubmittedToDialerDate,
 	p.Sold
 FROM
-	[WorkBench2Prod].[dbo].[Lead]					AS	a
+	[WorkBench2Prod].[dbo].[Lead]			AS	a
 
 LEFT	OUTER	JOIN	(
 	SELECT
 		LeadSourceID,
 		PartnerID
 	FROM
-		[WorkBench2Prod].[dbo].[LeadSourceLU])		AS	b
+		[WorkBench2Prod].[dbo].[LeadSourceLU])	AS	b
 ON	a.LeadSourceID	=	b.LeadSourceID
 
 LEFT	OUTER	JOIN	(
@@ -22,7 +22,7 @@ LEFT	OUTER	JOIN	(
 		PartnerID,
 		PartnerName
 	FROM
-		[WorkBench2Prod].[dbo].[Partner])			AS	c
+		[WorkBench2Prod].[dbo].[Partner])	AS	c
 ON	b.PartnerID	=	c.PartnerID
 
 LEFT	OUTER	JOIN	(
@@ -31,7 +31,7 @@ LEFT	OUTER	JOIN	(
 		LeadSourceID,
 		CAST(CONCAT(DATEPART(YYYY, SubmittedToDialer), RIGHT('00' + CAST(DATEPART(MM, SubmittedToDialer) AS VARCHAR(2)),2)) AS INTEGER)	AS	SubmittedToDialerDate
 	FROM
-		[WorkBench2Prod].[dbo].[Lead])				AS	m
+		[WorkBench2Prod].[dbo].[Lead])		AS	m
 ON	a.ParentLeadID	=	m.LeadID
 
 LEFT	OUTER	JOIN	(
@@ -39,7 +39,7 @@ LEFT	OUTER	JOIN	(
 		LeadSourceID,
 		PartnerID
 	FROM
-		[WorkBench2Prod].[dbo].[LeadSourceLU])		AS	n
+		[WorkBench2Prod].[dbo].[LeadSourceLU])	AS	n
 ON	m.LeadSourceID	=	n.LeadSourceID
 
 LEFT	OUTER	JOIN	(
@@ -47,7 +47,7 @@ LEFT	OUTER	JOIN	(
 		PartnerID,
 		PartnerName
 	FROM
-		[WorkBench2Prod].[dbo].[Partner])			AS	o
+		[WorkBench2Prod].[dbo].[Partner])	AS	o
 ON	n.PartnerID	=	o.PartnerID
 
 LEFT	OUTER	JOIN	(
@@ -58,7 +58,7 @@ LEFT	OUTER	JOIN	(
 			WHEN	SoldDate	IS	NOT	NULL	THEN	'Sold'
 			ELSE	'SoldDate Null'
 		End	AS	Sold
-	FROM	[WorkBench2Prod].[dbo].[Account])		AS	p
+	FROM	[WorkBench2Prod].[dbo].[Account])	AS	p
 ON	m.LeadID	=	p.LeadID
 
 WHERE
