@@ -1,0 +1,84 @@
+SELECT
+	DISTINCT	a.LeadID			AS	LeadID,
+	m.LeadID						AS	ParentLeadID,
+	p.AccountID						AS	AccountID,
+	c.PartnerName					AS	ChildPartner,
+	o.PartnerName					AS	ParentPartner,
+	m.SubmittedToDialerDate,
+	p.Sold
+FROM
+	[WorkBench2Prod].[dbo].[Lead]					AS	a
+
+LEFT	OUTER	JOIN	(
+	SELECT
+		LeadSourceID,
+		PartnerID
+	FROM
+		[WorkBench2Prod].[dbo].[LeadSourceLU])		AS	b
+ON	a.LeadSourceID	=	b.LeadSourceID
+
+LEFT	OUTER	JOIN	(
+	SELECT
+		PartnerID,
+		PartnerName
+	FROM
+		[WorkBench2Prod].[dbo].[Partner])			AS	c
+ON	b.PartnerID	=	c.PartnerID
+
+LEFT	OUTER	JOIN	(
+	SELECT
+		LeadID,
+		LeadSourceID,
+		CAST(CONCAT(DATEPART(YYYY, SubmittedToDialer), RIGHT('00' + CAST(DATEPART(MM, SubmittedToDialer) AS VARCHAR(2)),2)) AS INTEGER)	AS	SubmittedToDialerDate
+	FROM
+		[WorkBench2Prod].[dbo].[Lead])				AS	m
+ON	a.ParentLeadID	=	m.LeadID
+
+LEFT	OUTER	JOIN	(
+	SELECT
+		LeadSourceID,
+		PartnerID
+	FROM
+		[WorkBench2Prod].[dbo].[LeadSourceLU])		AS	n
+ON	m.LeadSourceID	=	n.LeadSourceID
+
+LEFT	OUTER	JOIN	(
+	SELECT
+		PartnerID,
+		PartnerName
+	FROM
+		[WorkBench2Prod].[dbo].[Partner])			AS	o
+ON	n.PartnerID	=	o.PartnerID
+
+LEFT	OUTER	JOIN	(
+	SELECT
+		LeadID,
+		AccountID,
+		CASE
+			WHEN	SoldDate	IS	NOT	NULL	THEN	'Sold'
+			ELSE	'SoldDate Null'
+		End	AS	Sold
+	FROM	[WorkBench2Prod].[dbo].[Account])		AS	p
+ON	m.LeadID	=	p.LeadID
+
+WHERE
+	c.PartnerName	LIKE	('%Alarm.com%')
+AND
+	a.ParentLeadID	IS	NOT	NULL
+--AND
+--	o.PartnerName	LIKE	('%Alarm.com%')
+AND
+	Sold	=	'Sold'
+AND
+	SubmittedToDialerDate	>=	201410
+AND
+	SubmittedToDialerDate	<=	201412
+
+--GROUP	BY
+--	o.PartnerName,
+--	c.PartnerName,
+--	m.SubmittedToDialerDate,
+--	p.Sold
+
+--ORDER	BY
+--	o.PartnerName
